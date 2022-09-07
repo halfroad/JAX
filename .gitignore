@@ -1,7 +1,16 @@
+# Project Specific
+*.zip
+*.DS_Store
+*.csv
+*.pd
+
+Exclusion/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pkl
 
 # C extensions
 *.so
@@ -127,3 +136,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Custom
+*.ttc
