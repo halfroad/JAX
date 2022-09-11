@@ -44,7 +44,7 @@ def train(data, targets):
             ]
         
     predictions = mlp(data, parameters)
-    classification = jnp.argmax(predictions, parameters)
+    classification = jnp.argmax(predictions, axis = 1)
     
     target = jnp.argmax(targets, axis = 1)
     accuracy = jnp.sum(classification == target) / len(target)
