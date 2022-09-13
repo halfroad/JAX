@@ -34,3 +34,12 @@ def prepare():
     targets = one_hot_nojit(targets)
     
     return (data, targets)
+
+array = jnp.array([0, 1, 2, 5, 8, 1, 9, 2])
+
+print(array.shape)
+
+array = one_hot_nojit(array)
+
+print(array.shape)
+print(array)

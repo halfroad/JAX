@@ -38,11 +38,7 @@ def main():
     
     difference = cross_entropy(genuines, predicted)
     
-    print("difference = {}".format(difference))
-    
-    jax.nn.cross
-    
-    
+    print("difference = {}".format(difference))    
     
 if __name__ == "__main__":
     
