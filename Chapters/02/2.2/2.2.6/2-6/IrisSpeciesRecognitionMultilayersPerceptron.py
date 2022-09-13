@@ -22,7 +22,7 @@ def train(data, targets):
     parameters = [a0, b0, a1, b1]
     learning_rate = 2.17e-4
     
-    for i in range(20000):
+    for i in range(500000):
         
         loss = mlp_loss(parameters, data, targets)
         
