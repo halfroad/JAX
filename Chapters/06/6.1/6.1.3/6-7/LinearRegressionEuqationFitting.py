@@ -41,6 +41,7 @@ def loss_function(parameters, inputs, genuines):
 
 def update(paramters, inputs, genuines, learning_rate = 1e-3):
 
+    # Be noted that  the inputs and genuines are always the same datasets, but try with gradient Weight and Bias
     grad_loss_function = jax.grad(loss_function)
     gradient_losses = grad_loss_function(paramters, inputs, genuines)
 
@@ -63,8 +64,6 @@ def start():
         if (i + 1) % 500 == 0:
 
             loss = loss_function(parameters, inputs, genuines)
-
-            print(len(inputs), len(genuines))
 
             end = time.time()
 
