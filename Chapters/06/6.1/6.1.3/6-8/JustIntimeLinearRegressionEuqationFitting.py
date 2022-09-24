@@ -2,11 +2,8 @@ import time
 import jax
 import jax.numpy as jnp
 
-import inspect
-
+@jax.jit
 def setup():
-
-    print(inspect.currentframe().f_code.co_name)
 
     key = jax.random.PRNGKey(17)
 
@@ -15,15 +12,16 @@ def setup():
     weight = .929
     bias = .214
 
-    genuines = weight * inputs + bias
+    genuines = inputs * weight + bias
 
     # Randomly create the parameters, find weight and bias by Linear Regression and Gradient
     parameters = jax.random.normal(key, shape = (2,))
 
     print("Initial Parameter: ", parameters)
 
-    return inputs, genuines, parameters
+    return parameters, inputs, genuines
 
+@jax.jit
 def model(parameters, inputs):
 
     weight = parameters[0]
@@ -33,29 +31,29 @@ def model(parameters, inputs):
 
     return predictions
 
+@jax.jit
 def loss_function(parameters, inputs, genuines):
 
     predictions = model(parameters, inputs)
 
+    # Only 1 value for loss, not dataset [losses]
     return jnp.mean((predictions - genuines) ** 2)
 
-def update(paramters, inputs, genuines, learning_rate = 1e-3):
+@jax.jit
+def update(parameters, inputs, genuines, learning_rate = 1e-3):
 
-    # Be noted that  the inputs and genuines are always the same datasets, but try with gradient Weight and Bias
     grad_loss_function = jax.grad(loss_function)
-    gradient_losses = grad_loss_function(paramters, inputs, genuines)
+    loss = grad_loss_function(parameters, inputs, genuines)
 
-    new_paramters = paramters - learning_rate * gradient_losses
+    new_parameters = parameters - learning_rate * loss
 
-    return new_paramters
+    return new_parameters
 
 def start():
 
-    print(inspect.currentframe().f_code.co_name)
+    parameters, inputs, genuines = setup()
 
     begin = time.time()
-
-    inputs, genuines, parameters = setup()
 
     for i in range(4000):
 
@@ -70,8 +68,6 @@ def start():
             bias = parameters[1]
 
             print("%.12fs is consumed" % (end - begin), f"when iterarting number %i," % (i + 1), f"the loss is %.12f" % loss, f"the weight is %.12f," % weight, f"the bias is %.12f" % bias)
-
-            begin = time.time()
 
     print("The final weight and bias: ", parameters)
 
