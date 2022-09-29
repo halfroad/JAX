@@ -1,14 +1,15 @@
 import array
 import gzip
 import os
+import ssl
 import struct
 import urllib.request
 import jax.numpy
 
 from os import path
+from tqdm import tqdm
 
-
-_DATA = "/tmp/jax_example_data/"
+_MNIST = "../../../../../Exclusion/Datasets/MNIST"
 
 def _download(url, name):
 
@@ -18,17 +19,39 @@ def _download(url, name):
 
     """
 
-    if not path.exists(_DATA):
+    if not path.exists(_MNIST):
 
-        os.makedirs(_DATA)
+        os.makedirs(_MNIST)
 
-    out_file = path.join(_DATA, name)
+    out_file = path.join(_MNIST, name)
 
     if not path.isfile(out_file):
 
-        urllib.request.urlretrieve(url, out_file)
+        ssl._create_default_https_context = ssl._create_unverified_context
 
-        print(f"Downloaded {url} to {_DATA}")
+        with tqdm(unit = "B", unit_scale = True, unit_divisor = 1024, miniters = 1, desc = name) as bar:
+
+            urllib.request.urlretrieve(url, out_file, reporthook = report_hook(bar))
+
+        print(f"Downloaded {url} to {_MNIST}")
+
+def report_hook(bar: tqdm):
+
+    """
+
+    Progress Bar of tqdm for downloads
+
+    """
+
+    def hook(block_counter = 0, block_size = 1, total_size = None):
+
+        if total_size is not None:
+
+            bar.total = total_size
+
+        bar.update(block_counter * block_size - bar.n)
+
+    return hook
 
 def _partial_flatten(inputs):
 
@@ -73,18 +96,21 @@ def mnist_raw():
 
         with gzip.open(file, "rb") as handler:
 
-            _, number, rows, columns = struct.unpack(">III", handler.read(16))
+            _, number, rows, columns = struct.unpack(">IIII", handler.read(16))
 
             return jax.numpy.array(array.array("B", handler.read()), dtype = jax.numpy.uint8).reshape(number, rows, columns)
 
     for name in ["train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz", "t10k-images-idx3-ubyte.gz", "t10k-labels-idx1-ubyte.gz"]:
 
-        _download(base_url + name, name)
+        url = path.join(_MNIST, name)
 
-    train_images = parse_images(path.join(_DATA, "train-images-idx3-ubyte.gz"))
-    train_labels = parse_labels(path.join(_DATA, "train-labels-idx1-ubyte.gz"))
-    test_images = parse_images(path.join(_DATA, "t10k-images-idx3-ubyte.gz"))
-    test_labels = parse_labels(path.join(_DATA, "t10k-labels-idx1-ubyte.gz"))
+        if not path.exists(url):
+            _download(base_url + name, name)
+
+    train_images = parse_images(path.join(_MNIST, "train-images-idx3-ubyte.gz"))
+    train_labels = parse_labels(path.join(_MNIST, "train-labels-idx1-ubyte.gz"))
+    test_images = parse_images(path.join(_MNIST, "t10k-images-idx3-ubyte.gz"))
+    test_labels = parse_labels(path.join(_MNIST, "t10k-labels-idx1-ubyte.gz"))
 
     return train_images, train_labels, test_images, test_labels
 
