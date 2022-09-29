@@ -162,4 +162,10 @@ def start():
     train_model(dataset_train, optimizer_state, total_train_images, get_paremeters_function, optimizer_update_function, predict_function)
     
     
-start()
+def main():
+
+    start()
+
+if __name__ == "__main__":
+
+    main()
