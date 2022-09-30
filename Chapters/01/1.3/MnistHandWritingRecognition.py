@@ -131,7 +131,7 @@ def train_model(dataset_train, optimizer_state, total_train_images, get_paremete
             
             data = batch[0].reshape((-1, 28 * 28))
             targets = batch[1].reshape((-1, 10))
-            optimizer_state = update((counter), optimizer_state, (data, targets), optimizer_update_function, get_paremeters_function, predict_function)
+            optimizer_state = update(counter, optimizer_state, (data, targets), optimizer_update_function, get_paremeters_function, predict_function)
             
             counter += 1
             

@@ -53,26 +53,6 @@ def report_hook(bar: tqdm):
 
     return hook
 
-def _partial_flatten(inputs):
-
-    """
-
-    Flatten all but the first dimension of an array
-
-    """
-
-    return jax.lax.expand_dims(inputs, [-1]) / jax.numpy.float32(255.)
-
-def _one_hot_nojit(inputs, k = 10, dtype = jax.numpy.float32):
-
-    """
-
-    Create a one-hot encoding of inputs of size k.
-
-    """
-
-    return jax.numpy.array(inputs[:, None] == jax.numpy.arange(k), dtype)
-
 def mnist_raw():
 
     """
@@ -123,11 +103,6 @@ def mnist(permute_train = False):
     """
 
     train_images, train_labels, test_images, test_labels = mnist_raw()
-
-    train_images = _partial_flatten(train_labels)
-    test_images = _partial_flatten(test_images)
-    train_labels = _one_hot_nojit(train_labels)
-    test_labels = _one_hot_nojit(test_labels)
 
     if permute_train:
 

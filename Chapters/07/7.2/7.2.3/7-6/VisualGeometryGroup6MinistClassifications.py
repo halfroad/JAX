@@ -7,18 +7,7 @@ sys.path.append("../../7.2.2/")
 sys.path.append("../")
 import BatchNormalization
 import MnistDatasetsV1
-
-
-def setup():
-
-    train_images, train_labels, test_images, test_labels = MnistDatasetsV1.mnist()
-
-    batch_size = 312
-    inputs_channels = 1
-    inputs_shape = [1, 28, 28, inputs_channels]                 # shape = [N, H, W, C]
-    kernel_shape = [3, 3, inputs_channels, inputs_channels]     # shape = [H, W, I, O]
-
-    return (train_images, train_labels), (test_images, test_labels), (batch_size, inputs_shape, kernel_shape)
+import ConvolutionUtils
 
 def init_multilayers_perceptron_parameters(kernel_shapes):
 
@@ -29,16 +18,16 @@ def init_multilayers_perceptron_parameters(kernel_shapes):
     # Create the kernel utilized by 12 layers Convolutional Neural Networks
     for i in range(len(kernel_shapes) - 2):
 
-        kernel_weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(784)
-        _dict = dict(kernel_weight = kernel_weight)
+        weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(28. * 28.)
+        _dict = dict(weight = weight)
 
         parameters.append(_dict)
 
     # Create the kernel utilized by 3 layers Dense
     for i in range(len(kernel_shapes) - 2, len(kernel_shapes)):
 
-        weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(784)
-        bias = jax.random.normal(key, shape = (kernel_shapes[i][-1],)) / jax.numpy.sqrt(784)
+        weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(28. * 28.)
+        bias = jax.random.normal(key, shape = (kernel_shapes[i][-1],)) / jax.numpy.sqrt(28. * 28.)
 
         _dict = dict(weight = weight, bias = bias)
 
@@ -47,12 +36,18 @@ def init_multilayers_perceptron_parameters(kernel_shapes):
     return parameters
 
 @jax.jit
-def convolve(inputs, kernel_weight, strides = 1):
+def convolve(inputs, kernel, strides = 1):
 
-    inputs_shape = inputs.shape
-    dimension_numbers = jax.lax.conv_dimension_numbers(inputs_shape, kernel_weight["kernel_weight"].shape, ("NHWC", "HWIO", "NHWC"))
+    weight = kernel["weight"]
 
-    inputs = jax.lax.conv_general_dilated(inputs, kernel_weight["kernel_weight"], window_strides = [strides, strides], padding = "SAME", dimension_numbers = dimension_numbers)
+    """
+    inputs.shape = [N, H, W, C]. lernel.shape = [H, W, I, O]
+    out.shape = [N, H, W, C]
+    ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(3, 2, 0, 1), out_spec=(0, 3, 1, 2))
+    """
+    dimension_numbers = jax.lax.conv_dimension_numbers(inputs.shape, weight.shape, ("NHWC", "HWIO", "NHWC"))
+
+    inputs = jax.lax.conv_general_dilated(inputs, weight, window_strides = [strides, strides], padding = "SAME", dimension_numbers = dimension_numbers)
     inputs = jax.nn.selu(inputs)
 
     return inputs
@@ -62,10 +57,10 @@ def forward(parameters, inputs):
 
     for i in range(len(parameters) - 2):
 
-        inputs = convolve(inputs, kernel_weight = parameters[i])
+        inputs = convolve(inputs, kernel = parameters[i])
 
     inputs = BatchNormalization.batch_normalize(inputs)
-    # inputs = jax.numpy.reshape(inputs, [-1, 50176])
+    inputs = jax.numpy.reshape(inputs, [inputs.shape[0], -1])
 
     for i in range(len(parameters) - 2, len(parameters) - 1):
 
@@ -80,7 +75,8 @@ def forward(parameters, inputs):
 @jax.jit
 def cross_entropy(genuines, predictions):
 
-    entropys = -jax.numpy.sum(genuines * jax.numpy.log(jax.numpy.clip(predictions, 1e-9, .999)) + (1 - genuines) * jax.numpy.log(jax.numpy.clip(1 - predictions, 1e-9, .999)), axis = 1)
+    entropys = genuines * jax.numpy.log(jax.numpy.clip(predictions, 1e-9, .999)) + (1 - genuines) * jax.numpy.log(jax.numpy.clip(1 - predictions, 1e-9, .999))
+    entropys = -jax.numpy.sum(entropys, axis = 1)
 
     return jax.numpy.mean(entropys)
 
@@ -88,8 +84,9 @@ def cross_entropy(genuines, predictions):
 def loss_function(paramters, inputs, genuines):
 
     predictions = forward(paramters, inputs)
+    entropys = cross_entropy(genuines, predictions)
 
-    return cross_entropy(genuines, predictions)
+    return entropys
 
 @jax.jit
 def optimizer_function(paramters, inputs, genuines, learning_rate = 1e-3):
@@ -118,10 +115,37 @@ def prediction_correct(parameters, inputs, targets):
 
     return jax.numpy.sum(classification == targets)
 
-def start():
+def setup():
+
+    train_images, train_labels, test_images, test_labels = MnistDatasetsV1.mnist()
+
+    batch_size = 100
+    inputs_channels = 1
+    # Be noted that the height (H) and width (W) means the height and width of array.
+    inputs_shape = [1, 28, 28, inputs_channels]                 # shape = [N, H, W, C]
+    kernel_shape = [3, 3, inputs_channels, inputs_channels]     # shape = [H, W, I, O]
+
+    return (train_images, train_labels), (test_images, test_labels), (batch_size, inputs_shape, kernel_shape)
+
+def train():
 
     (train_images, train_labels), (test_images, test_labels), (batch_size, inputs_shape, kernel_shape) = setup()
 
+    train_images = ConvolutionUtils.partial_flatten(train_images)
+    test_images = ConvolutionUtils.partial_flatten(test_images)
+    train_labels = ConvolutionUtils.one_hot_nojit(train_labels)
+    test_labels = ConvolutionUtils.one_hot_nojit(test_labels)
+
+    print(f"train_images.shape = {train_images.shape}, train_labels.shape = {train_labels.shape}), (test_images.shape = {test_images.shape}, test_labels.shape = {test_labels.shape}")
+
+    """
+    
+    train_images.shape = (60000, 28, 28, 1),
+    train_labels.shape = (60000, 10),
+    test_images.shape = (10000, 28, 28, 1),
+    test_labels.shape = (10000, 10)
+    
+    """
     kernel_shapes = [
         [3, 3, 1, 16],
         [3, 3, 16, 32],
@@ -130,13 +154,14 @@ def start():
         [50176, 128],
         [128, 10]
     ]
+
     parameters = init_multilayers_perceptron_parameters(kernel_shapes)
 
     begin = time.time()
 
     for i in range(20):
 
-        batch_number = (60000 - 4096) // batch_size
+        batch_number = train_images.shape[0] // batch_size
 
         for j in range(batch_number):
 
@@ -160,7 +185,7 @@ def start():
 
 def main():
 
-    start()
+    train()
 
 if __name__ == "__main__":
 
