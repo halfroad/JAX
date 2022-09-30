@@ -119,7 +119,7 @@ def setup():
 
     train_images, train_labels, test_images, test_labels = MnistDatasetsV1.mnist()
 
-    batch_size = 100
+    batch_size = 312
     inputs_channels = 1
     # Be noted that the height (H) and width (W) means the height and width of array.
     inputs_shape = [1, 28, 28, inputs_channels]                 # shape = [N, H, W, C]
