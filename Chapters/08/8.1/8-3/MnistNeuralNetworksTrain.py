@@ -10,6 +10,7 @@ from MnistNeuralNetworksCompoents import MnistNeuralNetworksCompoentsLayers
 def train(trains, tests):
 
     # Tell the TensorFlow to use GPU to train the model
+    # with.tfdevice("/CPU:0")
     with tf.device("/GPU:0"):
 
         image = tf.keras.Input(shape = (28, 28, 1))
