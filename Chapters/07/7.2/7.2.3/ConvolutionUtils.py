@@ -12,7 +12,7 @@ def partial_flatten(inputs):
     """
     inputs = jax.lax.expand_dims(inputs, [-1])  # [60000, 28, 28] -> [60000, 28, 28, 1]
 
-    return inputs / jax.numpy.float32(255.)
+    return inputs / 255.
 
 def one_hot_nojit(inputs, k = 10, dtype = jax.numpy.float32):
 

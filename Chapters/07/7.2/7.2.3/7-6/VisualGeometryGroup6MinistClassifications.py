@@ -9,25 +9,25 @@ import BatchNormalization
 import MnistDatasetsV1
 import ConvolutionUtils
 
-def init_multilayers_perceptron_parameters(kernel_shapes):
+def init_multilayers_perceptron_parameters(shapes):
 
     parameters = []
 
     key = jax.random.PRNGKey(17)
 
     # Create the kernel utilized by 12 layers Convolutional Neural Networks
-    for i in range(len(kernel_shapes) - 2):
+    for i in range(len(shapes) - 2):
 
-        weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(28. * 28.)
+        weight = jax.random.normal(key, shape = shapes[i]) / jax.numpy.sqrt(28. * 28.)
         _dict = dict(weight = weight)
 
         parameters.append(_dict)
 
     # Create the kernel utilized by 3 layers Dense
-    for i in range(len(kernel_shapes) - 2, len(kernel_shapes)):
+    for i in range(len(shapes) - 2, len(shapes)):
 
-        weight = jax.random.normal(key, shape = kernel_shapes[i]) / jax.numpy.sqrt(28. * 28.)
-        bias = jax.random.normal(key, shape = (kernel_shapes[i][-1],)) / jax.numpy.sqrt(28. * 28.)
+        weight = jax.random.normal(key, shape = shapes[i]) / jax.numpy.sqrt(28. * 28.)
+        bias = jax.random.normal(key, shape = (shapes[i][-1],)) / jax.numpy.sqrt(28. * 28.)
 
         _dict = dict(weight = weight, bias = bias)
 
@@ -119,7 +119,7 @@ def setup():
 
     train_images, train_labels, test_images, test_labels = MnistDatasetsV1.mnist()
 
-    batch_size = 100
+    batch_size = 312
     inputs_channels = 1
     # Be noted that the height (H) and width (W) means the height and width of array.
     inputs_shape = [1, 28, 28, inputs_channels]                 # shape = [N, H, W, C]
@@ -139,6 +139,13 @@ def train():
     print(f"train_images.shape = {train_images.shape}, train_labels.shape = {train_labels.shape}), (test_images.shape = {test_images.shape}, test_labels.shape = {test_labels.shape}")
 
     """
+    
+    train_images = train_images[: 2000]
+    train_labels = train_labels[: 2000]
+
+    test_images = test_images[: 100]
+    test_labels = test_labels[: 100]
+    
     
     train_images.shape = (60000, 28, 28, 1),
     train_labels.shape = (60000, 10),
@@ -166,10 +173,10 @@ def train():
         for j in range(batch_number):
 
             start_ = batch_size * j
-            end = batch_size * (j + 1)
+            end_ = batch_size * (j + 1)
 
-            train_images_batch = train_images[start_: end]
-            train_labels_batch = train_labels[start_: end]
+            train_images_batch = train_images[start_: end_]
+            train_labels_batch = train_labels[start_: end_]
 
             parameters = optimizer_function(parameters, train_images_batch, train_labels_batch)
 
@@ -177,7 +184,7 @@ def train():
 
             loss = loss_function(parameters, train_images, train_labels)
 
-            end_ = time.time()
+            end = time.time()
 
             accuracy = prediction_correct(parameters, test_images, test_labels) / float(4096.)
 
