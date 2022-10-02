@@ -12,10 +12,10 @@ def init_parameters(number_pixel, output_dimensions):
 
         key = jax.random.PRNGKey(17)
 
-        for i in range(1, len(layer_dimensions)):
+        for i in range(1, (len(layer_dimensions))):
 
             weight = jax.random.normal(key, shape = (layer_dimensions[i - 1], layer_dimensions[i])) / jax.numpy.sqrt(number_pixel)
-            bias = jax.random.normal(key, shape = (layer_dimensions[i],))
+            bias = jax.random.normal(key, shape = (layer_dimensions[i],)) / jax.numpy.sqrt(number_pixel)
 
             _dict = {"weight": weight, "bias": bias}
 

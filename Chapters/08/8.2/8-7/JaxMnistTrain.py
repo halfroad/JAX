@@ -24,13 +24,14 @@ def train(train_images, train_labels, test_images, test_labels, number_pixels, o
             end = time.time()
             accuracy = accuracy_checkup(parameters, test_images, test_labels) / float(1000.)
 
-            print("%.12f is consumed" % (end - begin), f"while iterating {i}, the loss now is {loss}, accuracy of test set is {accuracy}")
+            print("%.12fs is consumed" % (end - begin), f"while iterating {i + 1}, the loss now is %.12f," % loss, "the accuracy of test dataset is %.12f" % accuracy)
 
             begin = time.time()
 
 def main():
 
     (train_images, train_labels), (test_images, test_labels), number_pixels, output_dimensions = setup()
+
     train(train_images, train_labels, test_images, test_labels, number_pixels, output_dimensions)
 
 if __name__ == "__main__":
