@@ -115,7 +115,12 @@ def loss_function(parameters, inputs, genuines):
 
     """
 
-    predictions = forward(parameters, inputs)
+    # predictions = forward(parameters, inputs)
+    # entropys = cross_entropy(genuines, predictions)
+
+    # Appendix 5
+    vmap_forward = jax.vmap(forward, [None, 0])
+    predictions = vmap_forward(parameters, inputs)
     entropys = cross_entropy(genuines, predictions)
 
     return entropys
