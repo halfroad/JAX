@@ -59,8 +59,8 @@ def forward(parameters, inputs):
 
         inputs = convolve(inputs, kernel = parameters[i])
 
-    inputs = BatchNormalization.batch_normalize(inputs)
-    inputs = jax.numpy.reshape(inputs, [inputs.shape[0], -1])
+    # inputs = BatchNormalization.batch_normalize(inputs)
+    inputs = jax.numpy.reshape(inputs, newshape = (inputs.shape[0], 50176))
 
     for i in range(len(parameters) - 2, len(parameters) - 1):
 
@@ -81,22 +81,22 @@ def cross_entropy(genuines, predictions):
     return jax.numpy.mean(entropys)
 
 @jax.jit
-def loss_function(paramters, inputs, genuines):
+def loss_function(parameters, inputs, genuines):
 
-    predictions = forward(paramters, inputs)
+    predictions = forward(parameters, inputs)
     entropys = cross_entropy(genuines, predictions)
 
     return entropys
 
 @jax.jit
-def optimizer_function(paramters, inputs, genuines, learning_rate = 1e-3):
+def optimizer_function(parameters, inputs, genuines, learning_rate = 1e-3):
 
     grad_loss_function = jax.grad(loss_function)
-    gradients = grad_loss_function(paramters, inputs, genuines)
+    gradients = grad_loss_function(parameters, inputs, genuines)
 
-    new_paramters = jax.tree_util.tree_map(lambda parameter, gradient: parameter - learning_rate * gradient, paramters, gradients)
+    new_parameters = jax.tree_util.tree_map(lambda parameter, gradient: parameter - learning_rate * gradient, parameters, gradients)
 
-    return new_paramters
+    return new_parameters
 
 @jax.jit
 def prediction_correct(parameters, inputs, targets):
