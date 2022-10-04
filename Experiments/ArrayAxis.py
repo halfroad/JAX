@@ -25,4 +25,7 @@ array = np.array([0, 2, 1])
 
 print(array.sum())
 print(array.sum(axis = 0))
-print(array.sum(axis = 1))
+# print(array.sum(axis = 1))
+
+array = [0, 1, 2, 3, 4, 5, 6]
+print(array[-1])
