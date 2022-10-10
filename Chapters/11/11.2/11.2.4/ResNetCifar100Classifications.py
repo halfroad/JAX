@@ -69,7 +69,7 @@ def update(i, opt_state, batch, get_parameters, opt_update, predict):
     parameters = get_parameters(opt_state)
     grad_loss = jax.grad(loss)
 
-    return opt_state(i, grad_loss(parameters, batch, predict), opt_state)
+    return opt_update(i, grad_loss(parameters, batch, predict), opt_state)
 
 def train():
 
