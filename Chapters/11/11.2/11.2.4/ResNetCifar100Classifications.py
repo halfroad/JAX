@@ -52,10 +52,12 @@ def loss(parameters, batch, predict):
 
     inputs, targets = batch
 
-    losses = -targets * predict(parameters, inputs)
-    losses = jax.numpy.sum(losses, axis = 1)
+    # losses = -targets * predict(parameters, inputs)
+    # losses = jax.numpy.sum(losses, axis = 1)
 
-    return jax.numpy.mean(losses)
+    # return jax.numpy.mean(losses)
+
+    return jax.numpy.mean(jax.numpy.sum(-targets * predict(parameters, inputs), axis = 1))
 
 # Update the parameters of model
 def update(i, opt_state, batch, get_parameters, opt_update, predict):
