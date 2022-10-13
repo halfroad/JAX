@@ -8,7 +8,7 @@ def text_clear(text, stops, allow_prefix_suffix = True):
     text = text.lower()
 
     # ^ is to reverse, to replace the non-standard characters
-    text = re.sub(r"[^a-z0-9]]", " ", text)
+    text = re.sub(r"[^a-z0-9]", " ", text)
     # Remove multiple SPACEs
     text = re.sub(r" +", " ", text)
     # Remove the SPACEs from leading and trailing

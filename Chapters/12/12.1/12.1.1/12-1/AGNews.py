@@ -36,13 +36,14 @@ class AGNewsGeneratorBasedBuilder(GeneratorBasedBuilder):
             description = "AG News topic classification dataset.",
 
             features = Features({
-
-                "text": datasets.Value("string"),
+                "index": datasets.Value(dtype = "int32", id = None),
                 "label": datasets.features.ClassLabel(names = ["World", "Sports", "Business", "Sci/Tech"]),
+                "title": datasets.Sequence(datasets.Value("string"), id = None),
+                "description": datasets.Sequence(datasets.Value("string"), id = None),
             }),
             homepage = "http://groups.di.unipi.it",
             citation = "citation",
-            task_templates = [datasets.TextClassification(text_column = "text", label_column = "label")]
+            task_templates = [datasets.TextClassification(text_column = "description", label_column = "label")]
         )
 
     def _split_generators(self, dl_manager: DownloadManager):
@@ -73,18 +74,17 @@ class AGNewsGeneratorBasedBuilder(GeneratorBasedBuilder):
 
                 label, title, description = row
 
-                text = " ".join((title, description))
-
                 if self.refine:
 
-                    text = text_clear(text, self.stops)
+                    title = text_clear(title, self.stops)
+                    description = text_clear(description, self.stops)
 
                 # Original labels are [1, 2, 3, 4] ->
                 #                     ["World", "Sports", "Business", "Sci/Tech"]
                 # Re-map to [0, 1, 2, 3]
                 label = int(label) - 1
 
-                yield id_, {"text": text, "label": label}
+                yield id_, {"index": id_, "label": label, "title": title, "description": description}
 
 
 class AGNewsDatasetAutoGenerator:
