@@ -2,11 +2,6 @@ import csv
 import re
 import datasets
 
-import sys
-
-sys.path.append("../12.1.2/12-5/")
-from TextClearence import text_clear
-
 from datasets import GeneratorBasedBuilder, DatasetInfo, Features, DownloadManager
 
 _TRAIN_DOWNLOAD_URL = "https://raw.githubusercontent.com/mhjabreel/CharCnn_Keras/master/data/ag_news_csv/train.csv"
@@ -38,9 +33,17 @@ class AGNewsGeneratorBasedBuilder(GeneratorBasedBuilder):
             features = Features({
                 "index": datasets.Value(dtype = "int32", id = None),
                 "label": datasets.features.ClassLabel(names = ["World", "Sports", "Business", "Sci/Tech"]),
-                "title": datasets.Sequence(datasets.Value("string"), id = None),
-                "description": datasets.Sequence(datasets.Value("string"), id = None),
+                "title": datasets.Value(dtype = "string", id = None),
+                "description": datasets.Value(dtype = "string", id = None),
             }),
+
+            # features = Features({
+            #    "index": datasets.Value(dtype = "int32", id = None),
+            #    "label": datasets.features.ClassLabel(names = ["World", "Sports", "Business", "Sci/Tech"]),
+            #   "title": datasets.Sequence(datasets.Value("string"), id = None),
+            #    "description": datasets.Sequence(datasets.Value("string"), id = None),
+            # }),
+
             homepage = "http://groups.di.unipi.it",
             citation = "citation",
             task_templates = [datasets.TextClassification(text_column = "description", label_column = "label")]
@@ -73,11 +76,6 @@ class AGNewsGeneratorBasedBuilder(GeneratorBasedBuilder):
             for id_, row in enumerate(reader):
 
                 label, title, description = row
-
-                if self.refine:
-
-                    title = text_clear(title, self.stops)
-                    description = text_clear(description, self.stops)
 
                 # Original labels are [1, 2, 3, 4] ->
                 #                     ["World", "Sports", "Business", "Sci/Tech"]
