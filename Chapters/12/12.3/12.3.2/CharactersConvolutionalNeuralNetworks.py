@@ -49,7 +49,7 @@ def loss_function(parameters, batch, predict):
 
     return jax.numpy.mean(losses)
 
-def update(i, opt_state, batch, get_parameters, opt_update):
+def update(i, opt_state, batch, get_parameters, opt_update, predict):
 
     """
 
@@ -59,7 +59,7 @@ def update(i, opt_state, batch, get_parameters, opt_update):
 
     parameters = get_parameters(opt_state)
     grad_loss_fucntion = jax.grad(loss_function)
-    gradient = grad_loss_fucntion(parameters, batch)
+    gradient = grad_loss_fucntion(parameters, batch, predict)
 
     return opt_update(i, gradient, opt_state)
 
@@ -110,12 +110,12 @@ def train():
             batch = train_texts[start: end]
             targets = train_labels[start: end]
 
-            opt_state = update(i, opt_state, (batch, targets))
+            opt_state = update(i, opt_state, (batch, targets), get_parameters, opt_update, predict)
 
             if (i + 1) % 100 == 0:
 
                 parameters = get_parameters(opt_state)
-                loss = loss_function(parameters, (batch, targets))
+                loss = loss_function(parameters, (batch, targets), predict)
 
                 print(f"Loss: {loss}")
 
