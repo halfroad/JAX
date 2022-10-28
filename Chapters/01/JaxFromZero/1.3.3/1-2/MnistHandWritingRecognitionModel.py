@@ -109,6 +109,13 @@ def train():
 
     number_classes, class_names, input_shape, step_size, epochs, batch_size, momentum_mass, key, (train_images, train_labels), (test_images, test_labels) = setup()
 
+    """
+    
+    train_images = train_images[: 1000]
+    train_labels = train_labels[: 1000]
+    
+    """
+
     total_train_images = len(train_images)
 
     # step_size is learning_rate
@@ -129,7 +136,7 @@ def train():
 
             state = update(iteration, state, (entry, targets), get_parameters_function, update_function, predict)
 
-            if (iteration + 1) % 500 == 0:
+            if (iteration + 1) % 100 == 0:
                 print(f"Iteration: {iteration + 1} of epoch {i + 1}")
 
             iteration += 1
@@ -143,7 +150,7 @@ def train():
         for batch in zip(train_images, train_labels):
 
             entry = batch[0].reshape(input_shape)
-            targets = batch[1]
+            targets = batch[1].reshape((-1, 10))
 
             verified_predictions += verify_accuracy(parameters, (entry, targets), predict)
 
