@@ -3,7 +3,13 @@ import tensorflow
 import tensorflow_datasets
 from jax.example_libraries import stax, optimizers
 
+"""
 
+Paragraph 1.3.3, Train the model
+
+Page 13
+
+"""
 def setup():
 
     dataset, metadata = tensorflow_datasets.load(name = "mnist", data_dir = "../../../../Shares/Datasets/MNIST/", split = [tensorflow_datasets.Split.TRAIN, tensorflow_datasets.Split.TEST], batch_size = -1, as_supervised = True, with_info = True)
