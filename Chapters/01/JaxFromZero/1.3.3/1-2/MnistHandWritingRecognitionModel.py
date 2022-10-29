@@ -1,4 +1,5 @@
 import jax.numpy
+import tensorflow
 import tensorflow_datasets
 from jax.example_libraries import stax, optimizers
 
@@ -10,6 +11,14 @@ def setup():
 
     train_labels = one_hot_no_jit(train_labels)
     test_labels = one_hot_no_jit(test_labels)
+
+    total_train_images = len(train_labels)
+
+    trains = tensorflow.data.Dataset.from_tensor_slices((train_images, train_labels)).shuffle(1024).batch(256).prefetch(tensorflow.data.experimental.AUTOTUNE)
+    tests = tensorflow.data.Dataset.from_tensor_slices((test_images, test_labels)).shuffle(1024).batch(256).prefetch(tensorflow.data.experimental.AUTOTUNE)
+
+    trains = tensorflow_datasets.as_numpy(trains)
+    tests = tensorflow_datasets.as_numpy(tests)
 
     # Extract informative features
     class_names = metadata.features["label"].names
@@ -24,7 +33,7 @@ def setup():
 
     key = jax.random.PRNGKey(0)
 
-    return number_classes, class_names, input_shape, step_size, epochs, batch_size, momentum_mass, key, (train_images, train_labels), (test_images, test_labels)
+    return (number_classes, class_names, input_shape, step_size, epochs, batch_size, momentum_mass, key), (trains, tests, total_train_images)
 
 def one_hot_no_jit(inputs, k = 10, dtype = jax.numpy.float32):
 
@@ -107,7 +116,7 @@ def model():
 
 def train():
 
-    number_classes, class_names, input_shape, step_size, epochs, batch_size, momentum_mass, key, (train_images, train_labels), (test_images, test_labels) = setup()
+    (number_classes, class_names, input_shape, step_size, epochs, batch_size, momentum_mass, key), (trains, tests, total_train_images) = setup()
 
     """
     
@@ -116,7 +125,7 @@ def train():
     
     """
 
-    total_train_images = len(train_images)
+
 
     # step_size is learning_rate
     init_function, update_function, get_parameters_function = optimizers.adam(step_size = step_size)
@@ -129,7 +138,7 @@ def train():
 
         iteration = 0
 
-        for batch in zip(train_images, train_labels):
+        for batch in trains:
 
             entry = batch[0].reshape(input_shape)
             targets = batch[1].reshape((-1, 10))
@@ -147,7 +156,7 @@ def train():
         accuracies = []
         verified_predictions = 0.0
 
-        for batch in zip(train_images, train_labels):
+        for batch in trains:
 
             entry = batch[0].reshape(input_shape)
             targets = batch[1].reshape((-1, 10))
