@@ -68,6 +68,8 @@ def train():
 
     epochs, learning_rate, init_function, apply_function, parameters, data, targets = setup()
 
+    print(f"The initial parameters = {parameters}")
+
     for i in range(epochs):
 
         # Compute the loss
@@ -87,6 +89,7 @@ def train():
         ]
 
     print(f"Iteration: {i + 1}, the final loss is {loss}")
+    print(f"The final parameters = {parameters}")
 
 if __name__ == "__main__":
 
