@@ -1,6 +1,12 @@
 import jax
 from sklearn import datasets
 
+"""
+
+Paragraph 2.2.1, Iris Dataset Preparation
+Page 23
+
+"""
 
 def setup():
 
