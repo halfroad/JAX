@@ -1,6 +1,14 @@
 import jax
 
 
+"""
+
+Paragraph 2.3.2, Auto Grad on JAX
+Page 38
+
+
+"""
+
 def function(x):
 
     return x * x * x

@@ -1,3 +1,12 @@
+"""
+
+Paragraph 3.2.3
+Page 47
+3rd Step: Mathematic Compution of Gradient Descending
+
+"""
+
+
 def chain(x, alpha = 0.1):
 
     x = x - alpha * 2 * x
