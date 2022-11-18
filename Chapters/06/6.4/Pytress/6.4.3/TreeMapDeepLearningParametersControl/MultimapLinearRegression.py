@@ -21,7 +21,7 @@ def setup():
 
     genuines = inputs * weight + bias
 
-    layers_shape = [1,64, 128, 1]
+    layers_shape = [1, 64, 128, 1]
 
     return (prng, layers_shape, shape), (weight, bias), (inputs, genuines)
 
@@ -78,12 +78,59 @@ def optimizer(params, inputs, genuines, learn_rate = 1e-3):
     """
 
     grad_loss_function = jax.grad(loss_function)
-    gradient = grad_loss_function(params, inputs, genuines)
+    gradients = grad_loss_function(params, inputs, genuines)
 
-    params = params - learn_rate * gradient
+    params = params - learn_rate * gradients
 
     return params
 
+def optimizer_v1(params, inputs, genuines, learn_rate = 1e-3):
+
+    """
+
+    Optimizer Function
+
+    """
+
+    grad_loss_function = jax.grad(loss_function)
+    gradients = grad_loss_function(params, inputs, genuines)
+
+    # params = params - learn_rate * gradients
+
+    return gradient
+
+def optimizer_v2(params, inputs, genuines, learn_rate = 1e-3):
+
+    """
+
+    Optimizer Function
+
+    """
+
+    grad_loss_function = jax.grad(loss_function)
+    gradients = grad_loss_function(params, inputs, genuines)
+
+    new_params = []
+
+    for param, gradient in zip(params, gradients):
+
+        new_weight = param["weight"] - learn_rate * gradient["weight"]
+        new_bias = param["weight"] - learn_rate * gradient["bias"]
+
+        _dict = dict(weight = new_weight, bias = new_bias)
+
+        new_params.append(_dict)
+
+    return new_params
+
+def optimizer_v3(params, inputs, genuines, learn_rate = 1e-3):
+
+    grad_loss_function = jax.grad(loss_function)
+    gradients = grad_loss_function(params, inputs, genuines)
+
+    params = jax.tree_util.tree_map(lambda param, gradient: param - learn_rate * gradient, params, gradients)
+
+    return params
 
 def train():
 
@@ -93,6 +140,18 @@ def train():
     keys = jax.tree_util.tree_map(lambda x: x.shape, params)
 
     print("Keys = ", keys)
+
+    gradients = optimizer_v3(params, inputs, genuines)
+
+    for gradient in gradients:
+
+        print("------------------------")
+
+        weight = jax.numpy.array(gradient["weight"])
+        bias = jax.numpy.array(gradient["bias"])
+
+        print(weight.shape)
+        print(bias.shape)
 
 if __name__ == '__main__':
 
