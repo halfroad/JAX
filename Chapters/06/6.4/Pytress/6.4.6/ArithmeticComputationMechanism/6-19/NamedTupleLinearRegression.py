@@ -66,11 +66,12 @@ def train():
 
     print("Initial params = ", params)
 
-    for i in range(6000):
+    for i in range(4000):
 
         params = optimizer(params, inputs, genuines)
 
-        print(f"weight = {params.weight}, bias = {params.bias}")
+        if (i + 1) % 100 == 0:
+            print(f"weight = {params.weight}, bias = {params.bias}")
 
     print(f"weight = {params.weight}, bias = {params.bias}")
 
