@@ -38,11 +38,13 @@ def test():
 
     key = jax.random.PRNGKey(15)
 
-    features = jax.random.normal(key, shape = (200, 200))
+    features = jax.random.normal(key, shape = (10, 10))
 
     pool_output = pooling(features)
 
-    print(pool_output)
+    print(pool_output.shape)
+
+    print()
 
 if __name__ == '__main__':
 
