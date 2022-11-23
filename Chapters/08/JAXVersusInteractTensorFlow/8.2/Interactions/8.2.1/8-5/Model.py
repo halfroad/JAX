@@ -33,3 +33,11 @@ def forward(params, inputs):
 
         inputs = jax.numpy.dot(inputs, weight) + bias
         inputs = relu(inputs)
+
+    outputs = jax.numpy.dot(inputs, params[-1]["weight"]) + params[-1]["bias"]
+
+    print(outputs.shape)
+    
+    outputs = jax.nn.softmax(outputs, axis = -1)
+
+    return outputs
