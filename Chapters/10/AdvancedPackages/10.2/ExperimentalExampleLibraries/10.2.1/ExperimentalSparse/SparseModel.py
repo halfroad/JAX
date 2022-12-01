@@ -28,13 +28,52 @@ def setup():
     sparsed_inputs = sparse.BCOO.fromdense(jax.numpy.array(inputs))
     genuines = jax.numpy.array(genuines)
 
-    return (key, num_classes, classes, params), (inputs, sparsed_inputs, genuines)
+    learning_rate = 1e-3
+
+    return (key, num_classes, classes, params, learning_rate), (inputs, sparsed_inputs, genuines)
+
+# Create Sigmiod function
+def sigmoid(inputs):
+
+    return 0.5 * (jax.numpy.tanh(inputs / 2) + 1)
+
+# Create the predictive model
+def predict(params, inputs):
+
+    outputs = jax.numpy.dot(inputs, params[0]) + params[1]
+
+    return sigmoid(outputs)
+
+# Loss Function
+def loss_function(params, sparsed_inputs, genuines):
+
+    sparsed_predict = sparse.sparsify(predict)
+    genuines_hat = sparsed_predict(params, sparsed_inputs)
+    losses = genuines * jax.numpy.log(genuines_hat) + (1 - genuines) * jax.numpy.log(1 - genuines_hat)
+
+    return -jax.numpy.mean(losses)
 
 def train():
 
-    (key, num_classes, classes, params), (inputs, sparsed_inputs, genuines) = setup()
+    (key, num_classes, classes, params, learning_rate), (inputs, sparsed_inputs, genuines) = setup()
 
-    print((key, num_classes, classes, params), (inputs, sparsed_inputs, genuines))
+    loss = loss_function(params, sparsed_inputs, genuines)
+
+    print("Loss = ", loss)
+
+    for i in range(100):
+
+        grad_loss_function = jax.grad(loss_function)
+        gradients = grad_loss_function(params, sparsed_inputs, genuines)
+        params = [(param - gradient * learning_rate) for param, gradient in zip(params, gradients)]
+
+        print(f"Epoch {i}")
+
+
+    loss = loss_function(params, sparsed_inputs, genuines)
+
+    print("Loss = ", loss)
+
 
 if __name__ == '__main__':
 
