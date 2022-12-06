@@ -1,5 +1,6 @@
 import csv
-import os.path
+import math
+import os
 import re
 import ssl
 
@@ -10,9 +11,72 @@ from gensim.models.callbacks import CallbackAny2Vec
 from nltk import PorterStemmer
 from nltk.corpus import stopwords
 
+
+class TdIdfScore:
+
+    def __init__(self, corpus, model = None):
+
+        self.corpus = corpus
+        self.model = model
+        self.idfs = self.__idf()
+
+    def __idf(self):
+
+        idfs = {}
+        d = 0.0
+
+        # Statistics of occurances for words
+        for document in self.corpus:
+
+            d += 1
+            counted = []
+
+            for word in document:
+
+                if word not in counted:
+
+                    counted.append(word)
+
+                    if word in idfs:
+                        idfs[word] += 1
+                    else:
+                        idfs[word] = 1
+
+        for word in idfs:
+
+            idfs[word] = math.log(d / float(idfs[word]))
+
+        return idfs
+
+    def __get_tfidf_score(self, string):
+
+        tfidf = {}
+
+        for word in string:
+
+            if word in tfidf:
+                tfidf[word] += 1
+            else:
+                tfidf[word] = 1
+
+        for word in tfidf:
+
+            # Compute the Tf-IDF for each word
+            tfidf[word] *= self.idfs[word]
+
+        values = sorted(tfidf.items(), key = lambda _tfidf: tfidf[1], reverse = True)
+
+        values_ = []
+
+        for value in values:
+
+            values_.append(value[0])
+
+        return values_
+
 def setup():
 
-    handle = open("../../../../../../Shares/Datasets/agnews/train.csv", mode = "r")
+    handle = open("../../../../../../../Shares/Datasets/agnews/train.csv", mode = "r")
     trains = csv.reader(handle)
 
     return trains
@@ -32,7 +96,7 @@ def download_stop_words(path):
 
 def stop_words():
 
-    root = "../../../../../../Shares/Datasets//NLTK/"
+    root = "../../../../../../../Shares/Datasets/NLTK/"
     path = root + "stopwords"
 
     download_stop_words(path)
@@ -155,8 +219,10 @@ def main():
 
     labels, titles, descriptions = split(trains)
 
+    tfidf = TdIdfScore(descriptions)
+
     # The name for model storage
-    name = "../../../../../../Shares/Models/CorpusWord2Vec.bin"
+    name = "../../../../../../../Models/CorpusWord2Vec.bin"
 
     loss_logger = LossLogger()
 
@@ -165,9 +231,13 @@ def main():
     else:
         model = train(name, descriptions, callback = loss_logger)
 
-    string = "Prediction Unit Helps Forecast Wildfires"
+    for line in descriptions:
 
-    predict(model, string)
+        values = tfidf.__get_tfidf_score(line)
+
+        print(values)
+
+        predict(model, values)
 
 if __name__ == '__main__':
 
