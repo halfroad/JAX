@@ -293,12 +293,12 @@ def train():
         texts = train_texts[start: end]
         labels = train_labels[start: end]
 
-        optimizer_state = update(i, optimizer_state, (texts, labels))
+        optimizer_state = update(i, optimizer_state, (texts, labels), optimizer_update)
 
         if (i + 1) % 100 == 0:
 
             params = get_params(optimizer_state)
-            loss = loss_function(params, (texts, labels))
+            loss = loss_function(params, (texts, labels), predict)
 
             print(f"Loss = {loss}")
 
@@ -319,7 +319,7 @@ def train():
         texts = train_texts[start: end]
         labels = train_labels[start: end]
 
-        correct_predictions += verify_accuracy(params, (texts, labels))
+        correct_predictions += verify_accuracy(params, (texts, labels), predict)
 
     accuracies.append(correct_predictions / float(total_number))
 
@@ -328,8 +328,3 @@ def train():
 if __name__ == '__main__':
 
     train()
-
-
-
-
-
