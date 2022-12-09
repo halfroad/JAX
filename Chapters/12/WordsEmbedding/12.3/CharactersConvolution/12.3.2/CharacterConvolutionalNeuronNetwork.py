@@ -2,10 +2,11 @@ import csv
 import re
 import ssl
 
-import jax.numpy
+import jax
 import nltk
 import numpy
 from gensim.parsing import PorterStemmer
+from jax.example_libraries import stax, optimizers
 from nltk.corpus import stopwords
 
 
@@ -143,7 +144,7 @@ def stop_words():
 
     return stops
 
-def setup():
+def prepare():
 
     def split(trains_):
 
@@ -192,13 +193,143 @@ def setup():
 
     return make_datasets(labels_, titles_, descriptions_)
 
-def main():
+def CharacterConvolutionalNeuronNetwork(num_classes):
 
-    labels, titles, descriptions = setup()
+    return stax.serial(
 
-    print(labels.shape, titles.shape, descriptions.shape)
+        stax.Conv(1, (3, 3)),
+        stax.Relu,
 
+        stax.Conv(1, (5, 5)),
+        stax.Relu,
+
+        stax.Conv(1, (3, 3)),
+        stax.Relu,
+
+        stax.Flatten,
+
+        stax.Dense(256),
+        stax.Dense(num_classes),
+
+        stax.LogSoftmax
+    )
+
+def verify_accuracy(params, batch, predict):
+
+    inputs, targets = batch
+    result = predict(params, inputs)
+    class_ = jax.numpy.argmax(targets, axis = 1)
+    targets = jax.numpy.argmax(targets, axis = 1)
+
+    return jax.numpy.sum(class_ == targets)
+
+
+def loss_function(params, batch, predict):
+
+    inputs, targets = batch
+
+    predictions = predict(params, inputs)
+
+    losses = -targets * predictions
+    losses = jax.numpy.sum(losses, axis = 1)
+
+    return jax.numpy.mean(losses)
+
+def update(i, optimizer_state, batch, get_params, optimizer_update):
+
+    """
+    Single optimization step over a mini batch
+    """
+
+    params = get_params(optimizer_state)
+    grad_loss_function = jax.grad(loss_function)
+
+    gradients = grad_loss_function(params, batch)
+
+    params = optimizer_update(i, gradients, optimizer_state)
+
+    return params
+
+def setup():
+
+    input_shape = [-1, 64, 28, 1]
+    labels, titles, descriptions = prepare()
+    key = jax.random.PRNGKey(15)
+
+    descriptions = jax.random.shuffle(key, descriptions)
+
+    train_texts = jax.random.shuffle(key, titles)
+    train_labels = jax.random.shuffle(key, labels)
+
+    train_texts = train_texts[12000:]
+    train_labels = train_labels[12000:]
+
+    test_texts = train_texts[: 12000]
+    test_labels = train_labels[: 12000]
+
+    init_random_params, predict = CharacterConvolutionalNeuronNetwork(5)
+
+    batch_size = 128
+    total_number = 120000 - 12000
+
+    return ((train_texts, train_labels), (test_texts, test_labels)), (input_shape, key, batch_size, total_number), (init_random_params, predict)
+
+def train():
+
+    ((train_texts, train_labels), (test_texts, test_labels)), (input_shape, key, batch_size, total_number), (init_random_params, predict) = setup()
+
+    optimizer_init, optimizer_update, get_params = optimizers.adam(step_size = 2.17e-4)
+    _, init_params = init_random_params(key, input_shape = input_shape)
+
+    epochs = int(total_number // batch_size)
+
+    for i in range(epochs):
+
+        print(f"Training epoch {i + 1} started")
+
+        start = i * batch_size
+        end = (i + 1) * batch_size
+
+        texts = train_texts[start: end]
+        labels = train_labels[start: end]
+
+        optimizer_state = update(i, optimizer_state, (texts, labels))
+
+        if (i + 1) % 100 == 0:
+
+            params = get_params(optimizer_state)
+            loss = loss_function(params, (texts, labels))
+
+            print(f"Loss = {loss}")
+
+        params = get_params(optimizer_state)
+
+        print("Training epoch {i + 1} completed")
+
+    accuracies = []
+    correct_predictions = 0.0
+
+    test_epochs = int(12000 // batch_size)
+
+    for i in range(test_epochs):
+
+        start = i * batch_size
+        end = (i + 1) * batch_size
+
+        texts = train_texts[start: end]
+        labels = train_labels[start: end]
+
+        correct_predictions += verify_accuracy(params, (texts, labels))
+
+    accuracies.append(correct_predictions / float(total_number))
+
+    print(f"Training set accuracy: {accuracies}")
 
 if __name__ == '__main__':
 
-    main()
+    train()
+
+
+
+
+
