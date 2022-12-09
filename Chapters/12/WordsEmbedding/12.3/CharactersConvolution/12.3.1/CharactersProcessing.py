@@ -3,7 +3,6 @@ import re
 
 import jax.numpy
 import numpy
-from gensim.parsing import PorterStemmer
 
 def setup():
 
@@ -39,7 +38,7 @@ def setup():
 
             trains_.append(matrix)
 
-        return labels, trains_, descriptions
+        return jax.numpy.array(labels), jax.numpy.array(trains_), jax.numpy.array(descriptions)
 
     handle = open("../../../../../../Shares/Datasets/agnews/train.csv", mode = "r")
     trains = csv.reader(handle)
