@@ -5,9 +5,9 @@ from jax.example_libraries import stax
 
 def parepare():
 
-    (images_train, images_labels), (images_test, images_test) = tensorflow_datasets.load(name = "mnist", data_dir = "../../../../Shares/Datasets/MNIST/", split = [tensorflow_datasets.Split.TRAIN, tensorflow_datasets.Split.TEST])
+    trains, tests = tensorflow_datasets.load(name = "mnist", data_dir = "../../../../Shares/Datasets/MNIST/", split = [tensorflow_datasets.Split.TRAIN, tensorflow_datasets.Split.TEST])
 
-    return (images_train, images_labels), (images_test, images_test)
+    return trains, tests
 
 def one_hot_no_jit(inputs, k = 10, dtype = jax.numpy.float32):
 
@@ -43,5 +43,10 @@ def model():
 
 def start():
 
-    (images_train, images_labels), (images_test, images_test) = parepare()
+    trains, tests = parepare()
 
+    print(trains, tests)
+
+if __name__ == '__main__':
+
+    start()
