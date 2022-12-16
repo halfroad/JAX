@@ -8,7 +8,7 @@ def main():
     
     key = jax.random.PRNGKey(15)
     
-    inputs = jax.radmon.normal(key, (10,))
+    inputs = jax.random.normal(key, (10,))
     
     print(f"inputs = {inputs}")
     
