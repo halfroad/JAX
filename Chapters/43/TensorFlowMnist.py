@@ -55,7 +55,8 @@ class MnistNeuralNetwork(tf.keras.layers.Layer):
     
 def train():
     
-    with tf.device("/GPU:0"):
+    #with tf.device("/GPU:0"):
+    with tf.device("/CPU:0"):
         
         image = tf.keras.Input(shape = (28, 28, 1))
         logits = MnistNeuralNetwork()(image)
