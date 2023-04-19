@@ -58,10 +58,10 @@ def forward(params, inputs):
     
     for param in params[: -1]:
         
-        weight = param["weight"]
-        bias = param["bias"]
+        weights = param["weight"]
+        biases = param["bias"]
         
-        inputs = jax.numpy.dot(inputs, weight) + bias
+        inputs = jax.numpy.dot(inputs, weights) + biases
         inputs = relu(inputs)
         
     outputs = jax.numpy.dot(inputs, params[-1]["weight"]) + params[-1]["bias"]
@@ -129,7 +129,7 @@ def train():
             
             accuracies = verify_accuracy(params, test_images, test_labels) / float(10000.)
             
-            print("Time consumed: %.12f seconds" % (end - start), f" after {i + 1} iterations, now the loss is {losses}, accuracy of test set is {accuracies}")
+            print("Time consumed: %.12f seconds" % (end - start), f"after {i + 1} iterations, now the loss is {losses}, accuracy of test set is {accuracies}")
             
             start = time.time()
     
