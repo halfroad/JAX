@@ -17,23 +17,8 @@ def setup():
     train_images, train_labels = trains["image"], trains["label"]
     test_images, test_labels = tests["image"], tests["label"]
     
-    train_images = test_images.astype(jax.numpy.float32) / 225.0
-    
-    '''
-
-    def load(fileName: str):
-        
-        with open(file = fileName, mode = "rb") as handler:
-            
-            data = pickle.load(file = handler, encoding = "latin1")
-            
-        return data
-    
-    trains = load("../../Shares/cifar-100-python/train")
-    tests = load("../../Shares/cifar-100-python/test")
-    metas = load("../../Shares/cifar-100-python/meta")
-    
-    '''
+    train_images = train_images.astype(jax.numpy.float32) / 225.0
+    test_images = test_images.astype(jax.numpy.float32) / 225.0
     
     num_classes = 100
     
@@ -50,8 +35,8 @@ def setup():
     
     prng = jax.random.PRNGKey(10)
     inputs_shape = [-1, 32, 32, 3]
-    batch_size = 10
-    total_number = 100
+    batch_size = 100
+    total_number = 10000
     epochs = 2
     
     return (train_images, train_labels), (test_images, test_labels), (num_classes, prng, inputs_shape, batch_size, total_number, epochs, init_random_params_function, predict_function)
@@ -114,7 +99,7 @@ def train():
             # def update_function(i, optimizer_state, get_params_function, optimizer_update_function, batch, predict_function):
             optimizer_state = update_function(i, optimizer_state, get_params, optimizer_update, batch, predict_function)
             
-            if (j + 1) % 5 == 0:
+            if (j + 1) % 10 == 0:
                 
                 params = get_params(optimizer_state)
                 # def loss_function(params, batch, predict_function):
