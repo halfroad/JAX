@@ -23,7 +23,22 @@ def stop_words():
     
     return stops
 
-def purify(string: str, pattern: str = r"[^a-z0-9]", replacement: str = " ", stops = stop_words()):
+def purify(string: str, pattern: str = r"[^a-z]", replacement: str = " "):
+    
+    string = string.lower()
+    
+    string = re.sub(pattern = pattern, repl = replacement, string = string)
+    # Replace the consucutive spaces with single space
+    string = re.sub(pattern = r" +",  repl = replacement, string = string)
+    # string = re.sub(pattern = " ", repl = "", string = string)
+    
+    # Trim the string
+    string = string.strip()
+    string = string + " eos"
+    
+    return string
+
+def purify_stops(string: str, pattern: str = r"[^a-z0-9]", replacement: str = " ", stops = stop_words()):
     
     string = string.lower()
     
@@ -49,26 +64,46 @@ def setup():
     
     with open("../../Shares/ag_news_csv/train.csv", "r") as handler:
         
-        labels = []
-        titles = []
-        descriptions = []
+        train_labels = []
+        train_titles = []
+        train_descriptions = []
         
         trains = csv.reader(handler)
+        trains = list(trains)
         
-        for line in trains:
+        for i in range(len(trains)):
             
-            labels.append(jax.numpy.float32(line[0]))
-            titles.append(purify(line[1]))
-            descriptions.append(purify(line[2]))
+            line = trains[i]
             
-        return labels, titles, descriptions
+            train_labels.append(jax.numpy.int32(line[0]))
+            train_titles.append(purify(line[1]))
+            train_descriptions.append(purify_stops(line[2]))
+            
+    with open("../../Shares/ag_news_csv/test.csv", "r") as handler:
+        
+        test_labels = []
+        test_titles = []
+        test_descriptions = []
+        
+        tests = csv.reader(handler)
+        tests = list(tests)
+        
+        for i in range(len(tests)):
+            
+            line = tests[i]
+            
+            test_labels.append(jax.numpy.int32(line[0]))
+            test_titles.append(purify(line[1]))
+            test_descriptions.append(purify_stops(line[2]))
+            
+        return (train_labels, train_titles, train_descriptions), (test_labels, test_titles, test_descriptions)
 
     
 def main():
     
-    labels, titles, descriptions = setup()
+    (train_labels, train_titles, train_descriptions), (test_labels, test_titles, test_descriptions) = setup()
     
-    print(labels[: 5], titles[: 5], titles[: 5])
+    print((train_labels.shape, train_titles.shape, train_descriptions.shape), (test_labels.shape, test_titles.shape, test_descriptions.shape))
         
 if __name__ == "__main__":
     
