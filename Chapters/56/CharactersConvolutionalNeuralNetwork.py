@@ -166,8 +166,8 @@ def train():
     
     print("train_texts.shape =", train_texts.shape, ", train_labels.shape =", train_labels.shape, ", test_texts.shape =", test_texts.shape, ", test_labels.shape =", test_labels.shape)
     
-    train_batch_number = len(train_texts) / batch_size
-    test_batch_number = len(test_texts) / batch_size
+    train_batch_number = int(len(train_texts) / batch_size)
+    test_batch_number = int(len(test_texts) / batch_size)
     
     for i in range(epochs):
         

@@ -23,7 +23,7 @@ def stop_words():
     
     return stops
 
-def purify(string: str, pattern: str = r"[^a-z]", replacement: str = " "):
+def purify(string: str, pattern: str = r"[^a-z]", replacement: str = " ", split = False):
     
     string = string.lower()
     
@@ -35,6 +35,10 @@ def purify(string: str, pattern: str = r"[^a-z]", replacement: str = " "):
     # Trim the string
     string = string.strip()
     string = string + " eos"
+    
+    if split:
+        
+        string = string.split(" ")
     
     return string
 
