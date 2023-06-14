@@ -3,6 +3,14 @@ import tensorflow_datasets
 import jax
 from jax.example_libraries import stax, optimizers
 
+def one_hot(inputs, size = 10, dtype = jax.numpy.float32):
+
+    """
+    One-hot encoding
+    """
+    
+    return jax.numpy.array(inputs[:, None] == jax.numpy.arange(size), dtype = dtype)
+    
 def setup():
     
     dataset, metadata = tensorflow_datasets.load(name = "mnist", split = [tensorflow_datasets.Split.TRAIN, tensorflow_datasets.Split.TEST], batch_size =-1, as_supervised = True, with_info = True, data_dir = "/tmp/")
@@ -33,14 +41,6 @@ def setup():
     prng = jax.random.PRNGKey(15)
     
     return (number_classes, class_names, step_size, epochs, inputs_shape, batch_size, prng), (trains, tests, total_train_images)
-    
-def one_hot(inputs, size = 10, dtype = jax.numpy.float32):
-
-    """
-    One-hot encoding
-    """
-    
-    return jax.numpy.array(inputs[:, None] == jax.numpy.arange(size), dtype = dtype)
 
 def loss_function(params, batch, predict_function):
 
